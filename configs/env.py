@@ -1,6 +1,5 @@
-
 def get_env():
     config = {
-        'apiBaseUrl': "http://pdf-uno.com/api"
+        'apiBaseUrl': 'http://evo.com/api'
     }
-    return config;
+    return config
