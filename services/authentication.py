@@ -1,7 +1,6 @@
 import requests
 import json
 
-from configs import env
 from utils import errors
 from . import base_service
 
