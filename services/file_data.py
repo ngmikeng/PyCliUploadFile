@@ -7,7 +7,7 @@ from . import base_service
 
 class FileDataService(base_service.BaseService):
 
-    def upload_file(self, file_id: str, file_path, well_id: str, access_token: str):
+    def upload_file(self, file_id: str, file_path, well_id: str, stage: int, access_token: str):
         try:
             base_url = self.api_url
             headers = {
@@ -16,7 +16,7 @@ class FileDataService(base_service.BaseService):
             file_content = open(file_path, 'rb')
             files = {'file': file_content}
             response = requests.post(
-                f'{base_url}/pjr-template/v1/upload/pjr-templates/{file_id}/cli-single-file?wellId={well_id}',
+                f'{base_url}/pjr-template/v1/upload/pjr-templates/{file_id}/cli-single-file?wellId={well_id}&stage={stage}',
                 files=files,
                 headers=headers
             )

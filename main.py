@@ -2,7 +2,7 @@ import bson
 import typer
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from halo import Halo
 from pick import pick
 
@@ -56,13 +56,13 @@ def get_selection(access_token: str, api_url: str):
             return dict(options=list_selection, wells=well_response)
 
 
-def upload_file(access_token: str, api_url: str, file_path: str, well_id: str):
+def upload_file(access_token: str, api_url: str, file_path: str, well_id: str, stage: int):
     spinner = Halo(text='Loading...', spinner='dots')
     file_data_service = file_data.FileDataService(api_url)
     path_resolved = Path(file_path)
     file_id = bson.ObjectId()
     spinner.start('Uploading...')
-    upload_response = file_data_service.upload_file(file_id, path_resolved, well_id, access_token)
+    upload_response = file_data_service.upload_file(file_id, path_resolved, well_id, stage, access_token)
     if isinstance(upload_response, dict) and upload_response.get('error'):
         msg = upload_response.get('message')
         logger.error(msg)
@@ -73,7 +73,12 @@ def upload_file(access_token: str, api_url: str, file_path: str, well_id: str):
         return upload_response
 
 
-def main(username: str, password: str, file_path: str, api_url: Optional[str] = typer.Argument(None)):
+def main(
+        username: str,
+        password: str,
+        file_path: str,
+        api_url: Optional[str] = typer.Option(None, help="Base API path, i.e: \"http://evo.com/api\"")
+):
     if api_url is None:
         env_config = env.get_env()
         base_url = env_config.get('apiBaseUrl')
@@ -85,12 +90,17 @@ def main(username: str, password: str, file_path: str, api_url: Optional[str] = 
         if selection:
             wells: list = selection.get('wells')
             options: list = selection.get('options')
-            selected, index = pick(options, 'Please choose a well: ')
-            arr_str: list = selected.rsplit(' - ')
+            selected_well, index = pick(options, 'Please choose a well: ')
+            arr_str: list = selected_well.rsplit(' - ')
             well_api = arr_str[0]
             selected_well = list(filter(lambda well: well.get('api') == well_api, wells))
             well_id = selected_well[0].get('id')
-            upload_response = upload_file(access_token, api_url, file_path, well_id)
+            total_stages = selected_well[0].get('totalStages')
+            if total_stages is None:
+                total_stages = 10
+            list_stages = list(range(1, total_stages + 1))
+            selected_stage, index = pick(list_stages, 'Please choose a stage: ')
+            upload_response = upload_file(access_token, api_url, file_path, well_id, selected_stage)
             return upload_response
 
     return
