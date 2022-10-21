@@ -1,13 +1,17 @@
+from typing import Union
+
 import requests
 import json
 
+from models.auth import AuthResponse
+from models.error import ErrorResponse
 from utils import errors
 from . import base_service
 
 
 class AuthenticationService(base_service.BaseService):
 
-    def login(self, username: str, password: str):
+    def login(self, username: str, password: str) -> Union[AuthResponse, ErrorResponse]:
         try:
             base_url = self.api_url
             auth_token = 'bmdkZy1wYXNzd29yZDpzZWNyZXQ'
@@ -22,8 +26,9 @@ class AuthenticationService(base_service.BaseService):
                 headers=headers
             )
             response.raise_for_status()
+            data = response.json()
 
-            return response.json()
+            return AuthResponse(data.get('access_token'))
         except requests.exceptions.HTTPError as http_error:
             error_data = json.loads(http_error.response.text)
             error_status = http_error.response.status_code
@@ -43,4 +48,3 @@ class AuthenticationService(base_service.BaseService):
         except RuntimeError:
             msg = f'Runtime Error: {str(RuntimeError.args[0])}'
             return errors.error_response(msg, RuntimeError)
-

@@ -1,3 +1,5 @@
+from models.error import ErrorResponse
+
 
 def get_error_message(err_data, err_status):
     err_msg = 'Error occurred.'
@@ -17,9 +19,7 @@ def get_error_message(err_data, err_status):
     return err_msg
 
 
-def error_response(msg: str, payload=None):
-    return {
-        'error': True,
-        'message': msg,
-        'payload': payload
-    }
+def error_response(msg: str, payload=None) -> ErrorResponse:
+    error = ErrorResponse(error=True, message=msg, payload=payload)
+    return error
+

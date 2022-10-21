@@ -1,27 +1,30 @@
+from typing import Union
+
 import requests
 import json
 
+from models.error import ErrorResponse
 from utils import errors
 from . import base_service
 
 
 class FileDataService(base_service.BaseService):
 
-    def upload_file(self, file_id: str, file_path, well_id: str, stage: int, access_token: str):
+    def upload_file(self, file_id: str, file_path, access_token: str, well_stage_selected: list) -> Union[str, ErrorResponse]:
         try:
+            print(json.dumps(well_stage_selected))
             base_url = self.api_url
             headers = {
                 'Authorization': f'Bearer {access_token}',
             }
             file_content = open(file_path, 'rb')
-            files = {'file': file_content}
+            files = {'file': file_content, 'data': json.dumps(well_stage_selected)}
             response = requests.post(
-                f'{base_url}/pjr-template/v1/upload/pjr-templates/{file_id}/cli-single-file?wellId={well_id}&stage={stage}',
+                f'{base_url}/post-job-report/v1/upload/post-job-reports/{file_id}/cli-single-file',
                 files=files,
                 headers=headers
             )
             response.raise_for_status()
-
             return response.text
         except requests.exceptions.HTTPError as http_error:
             error_data = json.loads(http_error.response.text)

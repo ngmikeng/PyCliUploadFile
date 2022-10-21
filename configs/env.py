@@ -1,5 +1,5 @@
 def get_env():
     config = {
-        'apiBaseUrl': 'http://evo.com/api'
+        'apiBaseUrl': 'http://example.com/api'
     }
     return config
